@@ -39,6 +39,8 @@ const javaTestContainer = {
 function createContainer(container, region){
     if(!region) region = SCALEWAY_CONSTANTS.regions.fr;
 
+    var checkInterval;
+
     const containerSpec = {
         namespace_id: process.env.SCALEWAY_NS,
         name: container.name,
@@ -61,6 +63,12 @@ function createContainer(container, region){
             client.post(`/containers/v1beta1/regions/${region}/containers/${newContainerId}/deploy`, {}, function(err, res){
                 if(res && res.ok){
                     console.info(`[JIM] Conteneur en cours de déploiement ! statut : ${res.body.status}`);
+                    checkInterval = setInterval(function(){
+                        checkStatus(newContainerId, region).then(status => {
+                            console.log(`[JIM] Statut du conteneur : ${status}`);
+                            if(status !== 'pending') clearInterval(checkInterval);
+                        });
+                    }, 6000);
                 } else {
                     console.error(err);
                     process.exit(1);
@@ -71,6 +79,22 @@ function createContainer(container, region){
             process.exit(1);
         }
     });
+}
+
+function checkStatus(containerId, region){
+    return new Promise(function(resolve){
+        client.get(`/containers/v1beta1/regions/${region}/containers/${containerId}`, function(err, res){
+            if(res && res.ok){
+                resolve(res.body.status);
+            } else {
+                // On résout la promise dans tous les cas : si la requete échoue,
+                // on résout en 'unknown', valeur qui peut être retournée par Scaleway
+                // s'il ne parvient pas en interne à obtenir le statut.
+                resolve('unknown');
+            }
+        });
+    })
+    
 }
 
 // TEST !
