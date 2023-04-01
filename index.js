@@ -52,14 +52,14 @@ function createContainer(container, region){
     }
 
     client.post(`/containers/v1beta1/regions/${region}/containers`, containerSpec, function(err, res) {
-        if(res.ok) {
+        if(res && res.ok) {
             console.debug(res);
             const newContainerPublicDomain = res.body.domain_name;
             const newContainerId = res.body.id;
             console.info(`[JIM] URL du container : https://${newContainerPublicDomain}/`);
 
             client.post(`/containers/v1beta1/regions/${region}/containers/${newContainerId}/deploy`, {}, function(err, res){
-                if(res.ok){
+                if(res && res.ok){
                     console.info(`[JIM] Conteneur en cours de déploiement ! statut : ${res.body.status}`);
                 } else {
                     console.error(err);
