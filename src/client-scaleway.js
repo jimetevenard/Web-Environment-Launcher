@@ -10,7 +10,7 @@ module.exports = {
                         if(res && res.ok) {
                             resolve(res.body);
                         } else {
-                            reject(err);
+                            reject(err.body || err);
                         }
                     });
                 }); 
@@ -21,7 +21,7 @@ module.exports = {
                         if(res && res.ok){
                             resolve(res.body); 
                         } else {
-                            reject(err);
+                            reject(err.body || err);
                         }
                     });
                 });
